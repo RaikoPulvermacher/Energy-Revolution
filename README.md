@@ -4,6 +4,14 @@ A radical break with classical damping physics. Maximization of system resonance
 
 ---
 
+## 📄 Gesamtdokument als PDF (Deutsch)
+
+> **[⬇️ Energie-Revolution-8911.pdf herunterladen](./Energie-Revolution-8911.pdf)**
+>
+> Das PDF enthält alle Kapitel (Abstract, Beschreibung, Beweisführung, Vergleich, Vorhersage, README und Lizenz) in einem verlinkten deutschen Dokument.
+
+---
+
 ## 📖 Quick Start
 
 Imagine: You're trying to **fill a round hole with a square block**. It doesn't fit, it grinds, and heat is generated through friction.
