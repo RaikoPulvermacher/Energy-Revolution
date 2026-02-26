@@ -5,6 +5,41 @@ import re
 import markdown
 import weasyprint
 
+
+# ── Math & citation helpers ──────────────────────────────────────────────────
+
+def _math_to_html(expr):
+    """Convert simple LaTeX subscripts/superscripts inside an expression."""
+    # F_{n-1} → F<sub>n-1</sub>
+    expr = re.sub(r'([A-Za-z])_\{([^}]+)\}', r'\1<sub>\2</sub>', expr)
+    # F_n → F<sub>n</sub>
+    expr = re.sub(r'([A-Za-z])_([A-Za-z0-9])', r'\1<sub>\2</sub>', expr)
+    # F^{n} → F<sup>n</sup>
+    expr = re.sub(r'([A-Za-z])\^\{([^}]+)\}', r'\1<sup>\2</sup>', expr)
+    # F^n → F<sup>n</sup>
+    expr = re.sub(r'([A-Za-z])\^([A-Za-z0-9])', r'\1<sup>\2</sup>', expr)
+    return expr
+
+
+def preprocess(text):
+    """Remove cite markers and convert LaTeX math to HTML before Markdown pass."""
+    # Strip [cite: ...] annotation markers
+    text = re.sub(r'\s*\[cite:[^\]]+\]', '', text)
+
+    # Display math: $$...$$ → <p class="display-math">...</p>
+    def _disp(m):
+        expr = _math_to_html(m.group(1).strip())
+        return f'\n<p class="display-math">{expr}</p>\n'
+    text = re.sub(r'\$\$(.+?)\$\$', _disp, text, flags=re.DOTALL)
+
+    # Inline math: $...$ → <span class="math">...</span>
+    def _inl(m):
+        expr = _math_to_html(m.group(1))
+        return f'<span class="math">{expr}</span>'
+    text = re.sub(r'\$(?!\$)([^\$\n]+?)\$', _inl, text)
+
+    return text
+
 REPO_URL = "https://github.com/RaikoPulvermacher/Energy-Revolution/blob/main"
 ZENODO_URL = "https://doi.org/10.5281/zenodo.18757232"
 
@@ -16,7 +51,7 @@ def read(filename):
 
 def md_to_html(text):
     return markdown.markdown(
-        text,
+        preprocess(text),
         extensions=["tables", "fenced_code", "toc", "nl2br"],
     )
 
@@ -68,10 +103,14 @@ HTML = f"""<!DOCTYPE html>
       font-size: 10.5pt;
       line-height: 1.65;
       color: #1a1a1a;
+      orphans: 3;
+      widows: 3;
     }}
     h1, h2, h3, h4 {{
       font-family: "DejaVu Sans", Arial, sans-serif;
       color: #0d3b66;
+      page-break-after: avoid;
+      break-after: avoid;
     }}
     a {{
       color: #1565c0;
@@ -108,6 +147,8 @@ HTML = f"""<!DOCTYPE html>
       padding: 8pt 14pt;
       background: #f0f4fb;
       margin: 12pt 0 18pt 0;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }}
     .abstract-box h2 {{
       font-size: 12pt;
@@ -116,6 +157,7 @@ HTML = f"""<!DOCTYPE html>
     /* ── table of contents ── */
     .toc {{
       page-break-after: always;
+      break-after: always;
     }}
     .toc h2 {{
       font-size: 14pt;
@@ -142,17 +184,21 @@ HTML = f"""<!DOCTYPE html>
     /* ── content sections ── */
     .section {{
       page-break-before: always;
+      break-before: always;
     }}
     .section h1 {{
       font-size: 16pt;
       border-bottom: 2px solid #0d3b66;
       padding-bottom: 4pt;
     }}
+    /* ── prevent mid-content page cuts ── */
     table {{
       border-collapse: collapse;
       width: 100%;
       margin: 10pt 0;
       font-size: 9.5pt;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }}
     th, td {{
       border: 1px solid #aaa;
@@ -162,6 +208,22 @@ HTML = f"""<!DOCTYPE html>
     th {{
       background: #dbe7f5;
       font-weight: bold;
+    }}
+    li {{
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }}
+    blockquote {{
+      border-left: 3px solid #ccc;
+      margin: 0;
+      padding-left: 12pt;
+      color: #555;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }}
+    pre {{
+      page-break-inside: avoid;
+      break-inside: avoid;
     }}
     code {{
       font-family: "DejaVu Sans Mono", monospace;
@@ -174,11 +236,17 @@ HTML = f"""<!DOCTYPE html>
       border-top: 1px solid #ccc;
       margin: 14pt 0;
     }}
-    blockquote {{
-      border-left: 3px solid #ccc;
-      margin: 0;
-      padding-left: 12pt;
-      color: #555;
+    /* ── math notation ── */
+    .math {{
+      font-style: italic;
+    }}
+    .display-math {{
+      text-align: center;
+      font-style: italic;
+      margin: 12pt 0;
+      font-size: 11pt;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }}
   </style>
 </head>

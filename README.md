@@ -2,6 +2,8 @@
 
 A radical break with classical damping physics. Maximization of system resonance to 89% through the 11-step Fn process structure for the elimination of thermal losses.
 
+📄 **[⬇️ Download full paper as PDF (Energy-Revolution-8911.pdf)](./Energy-Revolution-8911.pdf)**
+
 ---
 
 ## 📖 Quick Start
