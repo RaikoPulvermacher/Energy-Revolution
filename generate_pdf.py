@@ -26,6 +26,9 @@ def preprocess(text):
     # Strip [cite: ...] annotation markers
     text = re.sub(r'\s*\[cite:[^\]]+\]', '', text)
 
+    # Strip LaTeX percent escape \% → %
+    text = text.replace(r'\%', '%')
+
     # Display math: $$...$$ → <p class="display-math">...</p>
     def _disp(m):
         expr = _math_to_html(m.group(1).strip())
@@ -91,26 +94,31 @@ HTML = f"""<!DOCTYPE html>
   <style>
     @page {{
       size: A4;
-      margin: 25mm 20mm 25mm 20mm;
+      margin: 20mm 18mm 20mm 18mm;
       @bottom-center {{
         content: counter(page);
-        font-size: 9pt;
+        font-size: 8.5pt;
         color: #555;
       }}
     }}
     body {{
       font-family: "DejaVu Sans", Arial, sans-serif;
-      font-size: 10.5pt;
-      line-height: 1.65;
+      font-size: 10pt;
+      line-height: 1.45;
       color: #1a1a1a;
-      orphans: 3;
-      widows: 3;
+      orphans: 2;
+      widows: 2;
+    }}
+    p {{
+      margin: 0 0 6pt 0;
     }}
     h1, h2, h3, h4 {{
       font-family: "DejaVu Sans", Arial, sans-serif;
       color: #0d3b66;
       page-break-after: avoid;
       break-after: avoid;
+      margin-top: 10pt;
+      margin-bottom: 5pt;
     }}
     a {{
       color: #1565c0;
@@ -120,50 +128,62 @@ HTML = f"""<!DOCTYPE html>
     .cover {{
       page: cover;
       text-align: center;
-      padding-top: 80mm;
+      padding-top: 110mm;
+      page-break-after: always;
+      break-after: always;
     }}
     @page cover {{
       margin: 0;
       @bottom-center {{ content: none; }}
     }}
     .cover h1 {{
-      font-size: 22pt;
+      font-size: 20pt;
       line-height: 1.3;
       color: #0d3b66;
-      margin-bottom: 10mm;
+      margin-bottom: 8mm;
     }}
     .cover .subtitle {{
-      font-size: 12pt;
+      font-size: 11pt;
       color: #444;
-      margin-bottom: 20mm;
+      margin-bottom: 12mm;
     }}
     .cover .author {{
-      font-size: 11pt;
+      font-size: 10.5pt;
       color: #222;
+      line-height: 1.6;
     }}
     /* ── abstract ── */
     .abstract-box {{
       border-left: 4px solid #1565c0;
-      padding: 8pt 14pt;
+      padding: 6pt 10pt;
       background: #f0f4fb;
-      margin: 12pt 0 18pt 0;
+      margin: 8pt 0 10pt 0;
       page-break-inside: avoid;
       break-inside: avoid;
     }}
-    .abstract-box h2 {{
-      font-size: 12pt;
+    .abstract-box h1 {{
+      font-size: 13pt;
+      border-bottom: none;
       margin-top: 0;
+    }}
+    .abstract-box h2 {{
+      font-size: 10.5pt;
+      margin-top: 7pt;
+      margin-bottom: 3pt;
+      color: #1565c0;
+    }}
+    .abstract-box p {{
+      margin: 0 0 4pt 0;
     }}
     /* ── table of contents ── */
     .toc {{
-      page-break-after: always;
-      break-after: always;
+      margin-top: 18pt;
     }}
     .toc h2 {{
-      font-size: 14pt;
+      font-size: 13pt;
       border-bottom: 2px solid #0d3b66;
-      padding-bottom: 4pt;
-      margin-bottom: 12pt;
+      padding-bottom: 3pt;
+      margin-bottom: 8pt;
     }}
     .toc ol {{
       list-style: none;
@@ -171,52 +191,61 @@ HTML = f"""<!DOCTYPE html>
       counter-reset: toc-counter;
     }}
     .toc ol li {{
-      margin: 6pt 0;
-      font-size: 11pt;
+      margin: 4pt 0;
+      font-size: 10pt;
     }}
     .toc ol li a {{
       color: #1565c0;
       text-decoration: none;
-    }}
-    .toc ol li a:hover {{
-      text-decoration: underline;
     }}
     /* ── content sections ── */
     .section {{
       page-break-before: always;
       break-before: always;
     }}
-    .section h1 {{
-      font-size: 16pt;
+    .section h1, .page-title {{
+      font-size: 14pt;
       border-bottom: 2px solid #0d3b66;
-      padding-bottom: 4pt;
+      padding-bottom: 3pt;
+      margin-top: 0;
+    }}
+    .section h2 {{
+      font-size: 11.5pt;
+    }}
+    .section h3 {{
+      font-size: 10.5pt;
     }}
     /* ── prevent mid-content page cuts ── */
     table {{
       border-collapse: collapse;
       width: 100%;
-      margin: 10pt 0;
-      font-size: 9.5pt;
+      margin: 7pt 0;
+      font-size: 9pt;
       page-break-inside: avoid;
       break-inside: avoid;
     }}
     th, td {{
       border: 1px solid #aaa;
-      padding: 5pt 8pt;
+      padding: 4pt 7pt;
       text-align: left;
     }}
     th {{
       background: #dbe7f5;
       font-weight: bold;
     }}
+    ul, ol {{
+      margin: 4pt 0 6pt 0;
+      padding-left: 18pt;
+    }}
     li {{
+      margin: 2pt 0;
       page-break-inside: avoid;
       break-inside: avoid;
     }}
     blockquote {{
       border-left: 3px solid #ccc;
-      margin: 0;
-      padding-left: 12pt;
+      margin: 0 0 6pt 0;
+      padding-left: 10pt;
       color: #555;
       page-break-inside: avoid;
       break-inside: avoid;
@@ -224,17 +253,18 @@ HTML = f"""<!DOCTYPE html>
     pre {{
       page-break-inside: avoid;
       break-inside: avoid;
+      margin: 6pt 0;
     }}
     code {{
       font-family: "DejaVu Sans Mono", monospace;
-      font-size: 9pt;
+      font-size: 8.5pt;
       background: #f5f5f5;
       padding: 1pt 3pt;
     }}
     hr {{
       border: none;
       border-top: 1px solid #ccc;
-      margin: 14pt 0;
+      margin: 8pt 0;
     }}
     /* ── math notation ── */
     .math {{
@@ -243,8 +273,8 @@ HTML = f"""<!DOCTYPE html>
     .display-math {{
       text-align: center;
       font-style: italic;
-      margin: 12pt 0;
-      font-size: 11pt;
+      margin: 8pt 0;
+      font-size: 10.5pt;
       page-break-inside: avoid;
       break-inside: avoid;
     }}
@@ -270,8 +300,8 @@ HTML = f"""<!DOCTYPE html>
 <!-- ══════════════════════════════════════════════════════════════════
      ABSTRACT
 ═══════════════════════════════════════════════════════════════════ -->
-<div id="abstract" class="section">
-  <h1>Abstract</h1>
+<div id="abstract">
+  <h1 class="page-title">Abstract</h1>
   <div class="abstract-box">
     {abstract_html}
   </div>
@@ -280,7 +310,7 @@ HTML = f"""<!DOCTYPE html>
 <!-- ══════════════════════════════════════════════════════════════════
      TABLE OF CONTENTS
 ═══════════════════════════════════════════════════════════════════ -->
-<div id="toc" class="toc section">
+<div id="toc" class="toc">
   <h2>Table of Contents</h2>
   <ol>
     <li><a href="#abstract">Abstract</a></li>
